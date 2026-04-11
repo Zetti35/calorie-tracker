@@ -40,17 +40,17 @@ type Goal = { key: string; emoji: string; title: string; subtitle: string; color
 type NutritionPlan = { morning: string; preworkout: string; postworkout: string; evening: string }
 
 const GOALS_BY_LEVEL: Record<string, Goal[]> = {
-  Дрищ: [
+  Новичок: [
     { key: 'tone', emoji: '✨', title: 'Привести себя в тонус', subtitle: 'Лёгкий рельеф и хорошее самочувствие', color: 'text-sky-400', border: 'border-sky-500/25', bg: 'bg-sky-500/8', activeBorder: 'border-sky-500/60', activeBg: 'bg-sky-500/15' },
     { key: 'lose', emoji: '🔥', title: 'Сбросить лишнее', subtitle: 'Постепенное и комфортное похудение', color: 'text-rose-400', border: 'border-rose-500/25', bg: 'bg-rose-500/8', activeBorder: 'border-rose-500/60', activeBg: 'bg-rose-500/15' },
     { key: 'habit', emoji: '🌱', title: 'Выработать привычку', subtitle: 'Регулярное движение как образ жизни', color: 'text-green-400', border: 'border-green-500/25', bg: 'bg-green-500/8', activeBorder: 'border-green-500/60', activeBg: 'bg-green-500/15' },
   ],
-  Тюфяк: [
+  Любитель: [
     { key: 'maintain', emoji: '⚖️', title: 'Поддержать форму', subtitle: 'Сохранить вес и держать тело в тонусе', color: 'text-yellow-400', border: 'border-yellow-500/25', bg: 'bg-yellow-500/8', activeBorder: 'border-yellow-500/60', activeBg: 'bg-yellow-500/15' },
     { key: 'lose', emoji: '🔥', title: 'Сжечь жир и обрести рельеф', subtitle: 'Минус жир, плюс чёткие контуры тела', color: 'text-rose-400', border: 'border-rose-500/25', bg: 'bg-rose-500/8', activeBorder: 'border-rose-500/60', activeBg: 'bg-rose-500/15' },
     { key: 'build', emoji: '💪', title: 'Начать строить мышцы', subtitle: 'Первые заметные результаты в объёме', color: 'text-purple-400', border: 'border-purple-500/25', bg: 'bg-purple-500/8', activeBorder: 'border-purple-500/60', activeBg: 'bg-purple-500/15' },
   ],
-  Вован: [
+  Атлет: [
     { key: 'mass', emoji: '🏋️', title: 'Набор мышечной массы', subtitle: 'Максимальный рост силы и объёма', color: 'text-orange-400', border: 'border-orange-500/25', bg: 'bg-orange-500/8', activeBorder: 'border-orange-500/60', activeBg: 'bg-orange-500/15' },
     { key: 'cut', emoji: '⚡', title: 'Сушка и рельеф', subtitle: 'Сохранить мышцы, убрать жировую прослойку', color: 'text-cyan-400', border: 'border-cyan-500/25', bg: 'bg-cyan-500/8', activeBorder: 'border-cyan-500/60', activeBg: 'bg-cyan-500/15' },
     { key: 'strength', emoji: '🎯', title: 'Рост силовых показателей', subtitle: 'Прогрессия в базовых упражнениях', color: 'text-emerald-400', border: 'border-emerald-500/25', bg: 'bg-emerald-500/8', activeBorder: 'border-emerald-500/60', activeBg: 'bg-emerald-500/15' },
@@ -58,7 +58,7 @@ const GOALS_BY_LEVEL: Record<string, Goal[]> = {
 }
 
 const NUTRITION: Record<string, Record<string, NutritionPlan>> = {
-  Дрищ: {
+  Новичок: {
     tone: {
       morning: 'Овсянка на воде с бананом и ложкой мёда — медленные углеводы для мягкого старта дня',
       preworkout: 'Яблоко или горсть орехов за 30 мин до тренировки — лёгкий заряд без тяжести',
@@ -78,7 +78,7 @@ const NUTRITION: Record<string, Record<string, NutritionPlan>> = {
       evening: 'Кефир с горстью орехов — полезные жиры и белок для спокойного сна',
     },
   },
-  Тюфяк: {
+  Любитель: {
     maintain: {
       morning: 'Овсянка с ягодами и орехами + варёное яйцо — баланс БЖУ для стабильного веса',
       preworkout: 'Банан с ложкой арахисовой пасты за 40 мин — углеводы + жиры для устойчивой энергии',
@@ -98,7 +98,7 @@ const NUTRITION: Record<string, Record<string, NutritionPlan>> = {
       evening: 'Творог 5% с орехами — казеиновый белок питает мышцы всю ночь',
     },
   },
-  Вован: {
+  Профессионал: {
     mass: {
       morning: 'Овсянка с бананом, 3 яйца + стакан молока — мощный старт с высоким содержанием БЖУ',
       preworkout: 'Рис с куриной грудкой за 1.5 часа — медленные углеводы для максимальной отдачи на тренировке',
@@ -121,9 +121,9 @@ const NUTRITION: Record<string, Record<string, NutritionPlan>> = {
 }
 
 const LEVELS = [
-  { key: 'Дрищ', emoji: '🥱', color: 'text-sky-400', border: 'border-sky-500/30', bg: 'bg-sky-500/10', activeBg: 'bg-sky-500/20', activeBorder: 'border-sky-500/60', desc: 'Сидячий образ жизни, почти нет спорта' },
-  { key: 'Тюфяк', emoji: '🚶', color: 'text-yellow-400', border: 'border-yellow-500/30', bg: 'bg-yellow-500/10', activeBg: 'bg-yellow-500/20', activeBorder: 'border-yellow-500/60', desc: 'Иногда занимаюсь, делаю зарядку' },
-  { key: 'Вован', emoji: '💪', color: 'text-orange-400', border: 'border-orange-500/30', bg: 'bg-orange-500/10', activeBg: 'bg-orange-500/20', activeBorder: 'border-orange-500/60', desc: 'Стабильные тренировки, серьёзные нагрузки' },
+  { key: 'Новичок', emoji: '🌱', color: 'text-sky-400', border: 'border-sky-500/30', bg: 'bg-sky-500/10', activeBg: 'bg-sky-500/20', activeBorder: 'border-sky-500/60', desc: 'Сидячий образ жизни, почти нет спорта' },
+  { key: 'Любитель', emoji: '🚶', color: 'text-yellow-400', border: 'border-yellow-500/30', bg: 'bg-yellow-500/10', activeBg: 'bg-yellow-500/20', activeBorder: 'border-yellow-500/60', desc: 'Иногда занимаюсь, делаю зарядку' },
+  { key: 'Атлет', emoji: '🏋️', color: 'text-orange-400', border: 'border-orange-500/30', bg: 'bg-orange-500/10', activeBg: 'bg-orange-500/20', activeBorder: 'border-orange-500/60', desc: 'Стабильные тренировки, серьёзные нагрузки' },
 ]
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } }

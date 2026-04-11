@@ -6,7 +6,7 @@ const DAYS = ['Понедельник','Вторник','Среда','Четве
 const REST = (day: string): Day => ({ day, type: 'Отдых', duration: 0, focus: '', exercises: [] })
 
 export const GOAL_PLANS: Record<string, Record<string, GoalPlan>> = {
-  Дрищ: {
+  Новичок: {
     tone: {
       description: 'Лёгкие тренировки 3 раза в неделю. Цель — разбудить тело, улучшить осанку и самочувствие. Никакого насилия над собой.',
       days: [
@@ -99,7 +99,7 @@ export const GOAL_PLANS: Record<string, Record<string, GoalPlan>> = {
       ],
     },
   },
-  Тюфяк: {
+  Любитель: {
     maintain: {
       description: 'Сбалансированный сплит 3 раза в неделю. Поддерживает форму, не даёт мышцам атрофироваться и держит вес стабильным.',
       days: [
@@ -216,7 +216,7 @@ export const GOAL_PLANS: Record<string, Record<string, GoalPlan>> = {
       ],
     },
   },
-  Вован: {
+  Профессионал: {
     mass: {
       description: 'Сплит 5 дней, высокий объём, прогрессия весов каждую неделю. Профицит калорий + тяжёлая работа = максимальный рост мышц.',
       days: [
