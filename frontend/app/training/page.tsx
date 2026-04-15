@@ -50,7 +50,7 @@ const GOALS_BY_LEVEL: Record<string, Goal[]> = {
     { key: 'lose', emoji: '🔥', title: 'Сжечь жир и обрести рельеф', subtitle: 'Минус жир, плюс чёткие контуры тела', color: 'text-rose-400', border: 'border-rose-500/25', bg: 'bg-rose-500/8', activeBorder: 'border-rose-500/60', activeBg: 'bg-rose-500/15' },
     { key: 'build', emoji: '💪', title: 'Начать строить мышцы', subtitle: 'Первые заметные результаты в объёме', color: 'text-purple-400', border: 'border-purple-500/25', bg: 'bg-purple-500/8', activeBorder: 'border-purple-500/60', activeBg: 'bg-purple-500/15' },
   ],
-  Атлет: [
+  Профессионал: [
     { key: 'mass', emoji: '🏋️', title: 'Набор мышечной массы', subtitle: 'Максимальный рост силы и объёма', color: 'text-orange-400', border: 'border-orange-500/25', bg: 'bg-orange-500/8', activeBorder: 'border-orange-500/60', activeBg: 'bg-orange-500/15' },
     { key: 'cut', emoji: '⚡', title: 'Сушка и рельеф', subtitle: 'Сохранить мышцы, убрать жировую прослойку', color: 'text-cyan-400', border: 'border-cyan-500/25', bg: 'bg-cyan-500/8', activeBorder: 'border-cyan-500/60', activeBg: 'bg-cyan-500/15' },
     { key: 'strength', emoji: '🎯', title: 'Рост силовых показателей', subtitle: 'Прогрессия в базовых упражнениях', color: 'text-emerald-400', border: 'border-emerald-500/25', bg: 'bg-emerald-500/8', activeBorder: 'border-emerald-500/60', activeBg: 'bg-emerald-500/15' },
