@@ -37,6 +37,24 @@ const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transi
 export default function ProfilePage() {
   const { userProfile, nutritionPlan, setNutritionPlan, entries, clearDiary, calcHistory, clearCalcHistory, training, reminders, setReminders } = useAppStore()
   const { user: tgUser, status, createPayment } = useAuth()
+  const [payLoading, setPayLoading] = useState(false)
+
+  async function handlePayment() {
+    setPayLoading(true)
+    try {
+      const url = await createPayment()
+      if (window.Telegram?.WebApp?.openLink) {
+        window.Telegram.WebApp.openLink(url)
+      } else {
+        window.open(url, '_blank')
+      }
+    } catch (err) {
+      console.error('Payment error:', err)
+      alert('Ошибка при создании платежа. Попробуй ещё раз.')
+    } finally {
+      setPayLoading(false)
+    }
+  }
 
   const [gender, setGender]     = useState<'male' | 'female'>(userProfile?.gender ?? 'male')
   const [age, setAge]           = useState(userProfile?.age ?? 25)
@@ -101,12 +119,13 @@ export default function ProfilePage() {
           </div>
           {(status?.type === 'trial' || status?.type === 'expired') && (
             <motion.button
-              onClick={async () => { const url = await createPayment(); window.open(url, '_blank') }}
+              onClick={handlePayment}
+              disabled={payLoading}
               whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500/15 border border-orange-500/25 text-orange-400 text-sm font-semibold hover:bg-orange-500/25 transition-all shrink-0"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500/15 border border-orange-500/25 text-orange-400 text-sm font-semibold hover:bg-orange-500/25 disabled:opacity-50 transition-all shrink-0"
             >
               <CreditCard className="w-4 h-4" />
-              50 ₽
+              {payLoading ? 'Загрузка...' : '50 ₽'}
             </motion.button>
           )}
         </div>
