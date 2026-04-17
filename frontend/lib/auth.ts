@@ -13,6 +13,9 @@ type CachedAuth = {
 
 function getInitData(): string {
   if (typeof window === 'undefined') return ''
+  try {
+    window.Telegram?.WebApp?.ready?.()
+  } catch { /* ignore */ }
   return window.Telegram?.WebApp?.initData ?? ''
 }
 
@@ -133,6 +136,7 @@ declare global {
     Telegram?: {
       WebApp?: {
         initData: string
+        ready?: () => void
         close: () => void
         openLink: (url: string) => void
       }

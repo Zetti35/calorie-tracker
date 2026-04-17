@@ -17,6 +17,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={`${geist.variable} dark h-full antialiased`}>
+      <head>
+        <script src="https://telegram.org/js/telegram-web-app.js" />
+      </head>
+      </head>
       <body className="min-h-full bg-[#0a0a0a] text-white">
         <AccessGuard>
             <Sidebar />
