@@ -24,11 +24,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
-  // Извлекаем telegram_id из customFields
+  // Извлекаем telegram_id из customFields или email
   const customFields = body.customFields as Record<string, string> | undefined
-  const telegramId = customFields?.telegram_id
+  let telegramId = customFields?.telegram_id
     ? parseInt(customFields.telegram_id)
     : null
+
+  // Если нет в customFields — пробуем извлечь из email (user{id}@calorie-tracker.app)
+  if (!telegramId) {
+    const email = body.buyerEmail as string ?? body.email as string ?? ''
+    const match = email.match(/^user(\d+)@/)
+    if (match) telegramId = parseInt(match[1])
+  }
 
   if (!telegramId) {
     console.error('Lava webhook: no telegram_id in customFields', body)
