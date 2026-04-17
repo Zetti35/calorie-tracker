@@ -64,7 +64,7 @@ export default function ConsentScreen({ onAccept }: Props) {
             <div>
               <p className="text-sm font-semibold text-white">50 рублей — навсегда</p>
               <p className="text-xs text-white/40 mt-0.5">
-                После пробного периода — разовая оплата для пожизненного доступа
+                После пробного периода функционал приостанавливается — разблокируй разовой оплатой
               </p>
             </div>
           </div>
@@ -85,7 +85,7 @@ export default function ConsentScreen({ onAccept }: Props) {
         </div>
 
         <p className="text-xs text-white/25 text-center mb-5">
-          Нажимая кнопку, ты соглашаешься с условиями использования: 3 дня бесплатного доступа, затем разовая оплата 50 ₽
+          3 дня — полный бесплатный доступ. После этого функционал будет приостановлен, пока не оплатишь 50 ₽ — без обязательств прямо сейчас
         </p>
 
         <motion.button
