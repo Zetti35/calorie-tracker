@@ -34,6 +34,11 @@ type AppState = {
   reminders: RemindersState
   setReminders: (r: RemindersState) => void
 
+  // Пользовательские продукты (из API или добавленные вручную)
+  customFoods: FoodItem[]
+  addCustomFood: (food: FoodItem) => void
+  removeCustomFood: (name: string) => void
+
   // Избранные продукты
   favorites: string[] // имена продуктов
   toggleFavorite: (name: string) => void
@@ -106,6 +111,16 @@ export const useAppStore = create<AppState>()(
         ],
       },
       setReminders: (r) => set({ reminders: r }),
+
+      customFoods: [],
+      addCustomFood: (food) => set((s) => {
+        // не дублируем если уже есть
+        if (s.customFoods.some(f => f.name === food.name)) return s
+        return { customFoods: [food, ...s.customFoods] }
+      }),
+      removeCustomFood: (name) => set((s) => ({
+        customFoods: s.customFoods.filter(f => f.name !== name)
+      })),
 
       favorites: [],
       toggleFavorite: (name) => set((s) => ({

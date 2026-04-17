@@ -11,31 +11,17 @@ const BarcodeScanner = dynamic(() => import('@/components/BarcodeScanner'), { ss
 
 const foods = foodsData as FoodItem[]
 
-// Open Food Facts API search
-async function searchOpenFoodFacts(query: string): Promise<FoodItem[]> {
+// Open Food Facts search via server-side proxy (avoids CORS/rate-limit issues)
+async function searchOpenFoodFacts(query: string): Promise<{ items: FoodItem[]; unavailable: boolean }> {
   try {
-    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=10&fields=product_name,nutriments,brands`
-    const res = await fetch(url, { signal: AbortSignal.timeout(5000) })
-    if (!res.ok) return []
+    const res = await fetch(`/api/food-search?q=${encodeURIComponent(query)}`, {
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!res.ok) return { items: [], unavailable: true }
     const data = await res.json()
-    return (data.products ?? [])
-      .filter((p: Record<string, unknown>) => {
-        const n = p.nutriments as Record<string, number> | undefined
-        return p.product_name && n?.['energy-kcal_100g'] != null
-      })
-      .map((p: Record<string, unknown>) => {
-        const n = p.nutriments as Record<string, number>
-        const brand = p.brands ? ` (${String(p.brands).split(',')[0].trim()})` : ''
-        return {
-          name: `${p.product_name}${brand}`,
-          calories: Math.round(n['energy-kcal_100g'] ?? 0),
-          protein:  Math.round((n['proteins_100g'] ?? 0) * 10) / 10,
-          fat:      Math.round((n['fat_100g'] ?? 0) * 10) / 10,
-          carbs:    Math.round((n['carbohydrates_100g'] ?? 0) * 10) / 10,
-        } as FoodItem
-      })
+    return { items: (data.products ?? []) as FoodItem[], unavailable: data.unavailable ?? false }
   } catch {
-    return []
+    return { items: [], unavailable: true }
   }
 }
 
@@ -103,7 +89,7 @@ function DonutChart({ protein, fat, carbs }: { protein: number; fat: number; car
 const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } }
 
 export default function DiaryPage() {
-  const { entries, addEntry, removeEntry, clearDayEntries, nutritionPlan, water, addWater, removeWater, resetWater, favorites, toggleFavorite, recentFoods, addRecentFood } = useAppStore()
+  const { entries, addEntry, removeEntry, clearDayEntries, nutritionPlan, water, addWater, removeWater, resetWater, favorites, toggleFavorite, recentFoods, addRecentFood, customFoods, addCustomFood } = useAppStore()
 
   const todayStr = toDateStr(new Date())
   const [activeDate, setActiveDate] = useState(todayStr)
@@ -117,18 +103,21 @@ export default function DiaryPage() {
   const [apiResults, setApiResults] = useState<FoodItem[]>([])
   const [apiLoading, setApiLoading] = useState(false)
   const [apiSearched, setApiSearched] = useState(false)
+  const [apiUnavailable, setApiUnavailable] = useState(false)
   const [showScanner, setShowScanner] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleApiSearch = useCallback(async (q: string) => {
-    if (q.trim().length < 2) { setApiResults([]); setApiSearched(false); return }
+    if (q.trim().length < 2) { setApiResults([]); setApiSearched(false); setApiUnavailable(false); return }
     setApiLoading(true)
     setApiSearched(false)
-    const results = await searchOpenFoodFacts(q)
-    setApiResults(results)
+    setApiUnavailable(false)
+    const { items, unavailable } = await searchOpenFoodFacts(q)
+    setApiResults(items)
+    setApiUnavailable(unavailable)
     setApiSearched(true)
     setApiLoading(false)
-  }, []) // ml → count
+  }, [])
 
   // Earliest date with entries (or 30 days назад)
   const minDate = useMemo(() => {
@@ -161,13 +150,18 @@ export default function DiaryPage() {
     [entries, activeDate]
   )
 
+  const allFoods = useMemo(() => {
+    const customNames = new Set(customFoods.map(f => f.name))
+    return [...customFoods, ...foods.filter(f => !customNames.has(f.name))]
+  }, [customFoods])
+
   const results = useMemo(() => {
     const normalize = (s: string) => s.toLowerCase().replace(/ё/g, 'е')
     const q = normalize(query.trim())
-    if (!q) return foods
+    if (!q) return allFoods
     const words = q.split(/\s+/).filter(Boolean)
-    return foods.filter(f => words.every(w => normalize(f.name).includes(w)))
-  }, [query])
+    return allFoods.filter(f => words.every(w => normalize(f.name).includes(w)))
+  }, [query, allFoods])
 
   const preview = selected ? calcMacros(selected, grams) : null
 
@@ -188,6 +182,10 @@ export default function DiaryPage() {
     const entry: DiaryEntry = { id: crypto.randomUUID(), food: selected, grams, timestamp }
     addEntry(entry)
     addRecentFood(selected.name)
+    // Сохраняем продукт из API в кастомную базу (если его нет в локальной)
+    if (!foods.some(f => f.name === selected.name)) {
+      addCustomFood(selected)
+    }
     setQuery(''); setSelected(null); setGrams(100)
   }
 
@@ -289,7 +287,7 @@ export default function DiaryPage() {
             <p className="text-xs text-white/30 mb-2">⭐ Быстрый доступ</p>
             <div className="flex flex-wrap gap-2">
               {favorites.map(name => {
-                const food = foods.find(f => f.name === name)
+                const food = allFoods.find(f => f.name === name)
                 if (!food) return null
                 return (
                   <motion.button key={name}
@@ -313,7 +311,7 @@ export default function DiaryPage() {
               onChange={e => {
               const val = e.target.value
               setQuery(val); setSelected(null)
-              setApiResults([]); setApiSearched(false)
+              setApiResults([]); setApiSearched(false); setApiUnavailable(false)
               if (debounceRef.current) clearTimeout(debounceRef.current)
               if (val.trim().length >= 2) {
                 debounceRef.current = setTimeout(() => handleApiSearch(val), 600)
@@ -325,7 +323,7 @@ export default function DiaryPage() {
               className="w-full h-14 bg-white/[0.06] border border-white/10 rounded-2xl pl-12 pr-24 text-sm text-white placeholder:text-white/30 outline-none focus:border-green-500/50 transition-colors" />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
               {query && (
-                <button onClick={() => { setQuery(''); setSelected(null); setApiResults([]); setApiSearched(false) }}>
+                <button onClick={() => { setQuery(''); setSelected(null); setApiResults([]); setApiSearched(false); setApiUnavailable(false) }}>
                   <X className="w-4 h-4 text-white/30 hover:text-white/60" />
                 </button>
               )}
@@ -347,8 +345,8 @@ export default function DiaryPage() {
                   </div>
                 )}
                 {(query.trim() ? results : [
-                  ...recentFoods.map(n => foods.find(f => f.name === n)).filter(Boolean) as typeof foods,
-                  ...foods.filter(f => !recentFoods.includes(f.name)),
+                  ...recentFoods.map(n => allFoods.find(f => f.name === n)).filter(Boolean) as typeof allFoods,
+                  ...allFoods.filter(f => !recentFoods.includes(f.name)),
                 ]).map(food => (
                   <button key={food.name} onClick={() => { setSelected(food); setQuery(food.name) }}
                     className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-white/[0.06] transition-colors text-left border-b border-white/5 last:border-0">
@@ -357,6 +355,12 @@ export default function DiaryPage() {
                         <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md border text-sky-400 bg-sky-500/15 border-sky-500/25">
                           <Clock className="w-2.5 h-2.5" />
                           недавнее
+                        </span>
+                      )}
+                      {customFoods.some(f => f.name === food.name) && (
+                        <span className="flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md border text-purple-400 bg-purple-500/15 border-purple-500/25">
+                          <Globe className="w-2.5 h-2.5" />
+                          сохранён
                         </span>
                       )}
                       <span className="text-sm text-white">{food.name}</span>
@@ -380,7 +384,16 @@ export default function DiaryPage() {
                         <span className="text-xs text-white/30">Ищем в мировой базе...</span>
                       </div>
                     )}
-                    {!apiLoading && apiSearched && apiResults.length > 0 && (
+                    {!apiLoading && apiSearched && apiUnavailable && (
+                      <div className="flex items-center gap-2 px-5 py-3 border-t border-white/[0.06]">
+                        <span className="text-sm">🌐</span>
+                        <div>
+                          <p className="text-xs text-yellow-400/80">Мировая база временно недоступна</p>
+                          <p className="text-[10px] text-white/30">Open Food Facts не отвечает — попробуй позже</p>
+                        </div>
+                      </div>
+                    )}
+                    {!apiLoading && apiSearched && !apiUnavailable && apiResults.length > 0 && (
                       <>
                         <div className="px-5 py-2 border-t border-white/[0.06] flex items-center gap-2">
                           <Globe className="w-3 h-3 text-purple-400" />
@@ -398,7 +411,7 @@ export default function DiaryPage() {
                         ))}
                       </>
                     )}
-                    {!apiLoading && apiSearched && apiResults.length === 0 && results.length === 0 && (
+                    {!apiLoading && apiSearched && !apiUnavailable && apiResults.length === 0 && results.length === 0 && (
                       <div className="px-5 py-3 border-t border-white/[0.06] text-xs text-white/30">
                         Ничего не найдено
                       </div>

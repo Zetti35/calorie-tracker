@@ -123,7 +123,7 @@ const NUTRITION: Record<string, Record<string, NutritionPlan>> = {
 const LEVELS = [
   { key: 'Новичок', emoji: '🌱', color: 'text-sky-400', border: 'border-sky-500/30', bg: 'bg-sky-500/10', activeBg: 'bg-sky-500/20', activeBorder: 'border-sky-500/60', desc: 'Сидячий образ жизни, почти нет спорта' },
   { key: 'Любитель', emoji: '🚶', color: 'text-yellow-400', border: 'border-yellow-500/30', bg: 'bg-yellow-500/10', activeBg: 'bg-yellow-500/20', activeBorder: 'border-yellow-500/60', desc: 'Иногда занимаюсь, делаю зарядку' },
-  { key: 'Атлет', emoji: '🏋️', color: 'text-orange-400', border: 'border-orange-500/30', bg: 'bg-orange-500/10', activeBg: 'bg-orange-500/20', activeBorder: 'border-orange-500/60', desc: 'Стабильные тренировки, серьёзные нагрузки' },
+  { key: 'Профессионал', emoji: '🏋️', color: 'text-orange-400', border: 'border-orange-500/30', bg: 'bg-orange-500/10', activeBg: 'bg-orange-500/20', activeBorder: 'border-orange-500/60', desc: 'Стабильные тренировки, серьёзные нагрузки' },
 ]
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } }
@@ -174,9 +174,16 @@ export default function TrainingPage() {
   const selectedGoal = training.selectedGoal
   const weekKey = getWeekKey()
 
+  // Сбрасываем невалидный уровень из старого localStorage
+  useEffect(() => {
+    if (selected && !GOALS_BY_LEVEL[selected]) {
+      setTrainingLevel(LEVELS[0].key)
+    }
+  }, [selected, setTrainingLevel])
+
   const plan = selected && selectedGoal ? GOAL_PLANS[selected]?.[selectedGoal] : null
   const levelMeta = LEVELS.find(l => l.key === selected)
-  const goals = selected ? GOALS_BY_LEVEL[selected] : []
+  const goals = (selected ? GOALS_BY_LEVEL[selected] : null) ?? []
   const nutrition = selected && selectedGoal ? NUTRITION[selected]?.[selectedGoal] : null
 
   const workoutDays = plan?.days.filter(d => d.exercises.length > 0) ?? []
