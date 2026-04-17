@@ -1,7 +1,7 @@
 'use client'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { NutritionPlan, DiaryEntry, UserProfile } from '@/types'
+import type { NutritionPlan, DiaryEntry, UserProfile, FoodItem } from '@/types'
 
 type TrainingState = {
   selectedLevel: string | null
