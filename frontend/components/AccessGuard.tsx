@@ -1,6 +1,5 @@
 'use client'
 import { useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { CreditCard, Lock } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
@@ -13,16 +12,14 @@ type Props = {
 
 export default function AccessGuard({ children }: Props) {
   const { status, isLoading, acceptTerms, createPayment, refreshStatus } = useAuth()
-  const searchParams = useSearchParams()
-  const router = useRouter()
 
   // Проверяем редирект после оплаты
   useEffect(() => {
-    if (searchParams.get('payment') === 'success') {
+    if (typeof window !== 'undefined' && window.location.search.includes('payment=success')) {
       refreshStatus()
-      router.replace('/')
+      window.history.replaceState({}, '', '/')
     }
-  }, [searchParams, refreshStatus, router])
+  }, [refreshStatus])
 
   async function handlePayment() {
     try {

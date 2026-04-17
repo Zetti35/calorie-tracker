@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
-import { Suspense } from 'react'
 import './globals.css'
 import Sidebar from '@/components/layout/Sidebar'
 import PageTransition from '@/components/layout/PageTransition'
@@ -19,8 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru" className={`${geist.variable} dark h-full antialiased`}>
       <body className="min-h-full bg-[#0a0a0a] text-white">
-        <Suspense>
-          <AccessGuard>
+        <AccessGuard>
             <Sidebar />
             <main className="md:ml-64 min-h-screen relative pt-[56px] md:pt-0">
               <NotificationManager />
@@ -28,7 +26,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <PageTransition>{children}</PageTransition>
             </main>
           </AccessGuard>
-        </Suspense>
       </body>
     </html>
   )
