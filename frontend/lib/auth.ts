@@ -79,7 +79,8 @@ export function useAuth(): UseAuthReturn {
     try {
       const data = await apiCall<AuthResponse>('/api/auth/login', { method: 'POST', body: '{}' })
       setAuth(data)
-    } catch {
+    } catch (err) {
+      console.error('[useAuth] login error:', err)
       // При ошибке сети — используем кэш
       const cached = loadCache()
       if (cached) {
@@ -112,6 +113,7 @@ export function useAuth(): UseAuthReturn {
   }, [setAuth])
 
   useEffect(() => {
+    console.log('[useAuth] mounting, calling login...')
     // Сначала показываем кэш, потом обновляем
     const cached = loadCache()
     if (cached) {
