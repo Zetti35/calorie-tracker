@@ -1,9 +1,10 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, ChevronDown, Save, Trash2, RotateCcw, BookOpen, Calculator, Dumbbell, Bell, BellOff } from 'lucide-react'
+import { User, ChevronDown, Save, Trash2, RotateCcw, BookOpen, Calculator, Dumbbell, Bell, BellOff, CreditCard, CheckCircle2, Clock } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { calculateNutrition, ACTIVITY_LABELS, GOAL_LABELS } from '@/lib/calculator'
+import { useAuth } from '@/lib/auth'
 import type { UserProfile } from '@/types'
 
 const GENDER_LABELS = { male: 'Мужской', female: 'Женский' } as const
@@ -35,6 +36,7 @@ const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transi
 
 export default function ProfilePage() {
   const { userProfile, nutritionPlan, setNutritionPlan, entries, clearDiary, calcHistory, clearCalcHistory, training, reminders, setReminders } = useAppStore()
+  const { user: tgUser, status, createPayment } = useAuth()
 
   const [gender, setGender]     = useState<'male' | 'female'>(userProfile?.gender ?? 'male')
   const [age, setAge]           = useState(userProfile?.age ?? 25)
@@ -79,6 +81,36 @@ export default function ProfilePage() {
           <p className="text-sm text-white/40">Твои параметры и статистика</p>
         </div>
       </div>
+
+      {/* Блок аккаунта */}
+      {tgUser && (
+        <div className="mt-6 bg-zinc-900/80 border border-zinc-700/60 rounded-2xl p-5 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-white">{tgUser.first_name}{tgUser.username ? ` @${tgUser.username}` : ''}</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              {status?.type === 'subscribed' && (
+                <><CheckCircle2 className="w-3.5 h-3.5 text-green-400" /><span className="text-xs text-green-400">Доступ активен</span></>
+              )}
+              {status?.type === 'trial' && (
+                <><Clock className="w-3.5 h-3.5 text-blue-400" /><span className="text-xs text-blue-400">Пробный период · {status.remaining_hours} ч</span></>
+              )}
+              {status?.type === 'expired' && (
+                <><CreditCard className="w-3.5 h-3.5 text-orange-400" /><span className="text-xs text-orange-400">Требуется оплата</span></>
+              )}
+            </div>
+          </div>
+          {(status?.type === 'trial' || status?.type === 'expired') && (
+            <motion.button
+              onClick={async () => { const url = await createPayment(); window.open(url, '_blank') }}
+              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500/15 border border-orange-500/25 text-orange-400 text-sm font-semibold hover:bg-orange-500/25 transition-all shrink-0"
+            >
+              <CreditCard className="w-4 h-4" />
+              50 ₽
+            </motion.button>
+          )}
+        </div>
+      )}
 
       <div className="h-px bg-white/[0.06] my-8" />
 

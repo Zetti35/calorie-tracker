@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
+import { Suspense } from 'react'
 import './globals.css'
 import Sidebar from '@/components/layout/Sidebar'
 import PageTransition from '@/components/layout/PageTransition'
 import ProfileButton from '@/components/layout/ProfileButton'
 import NotificationManager from '@/components/NotificationManager'
+import AccessGuard from '@/components/AccessGuard'
 
 const geist = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 
@@ -17,12 +19,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru" className={`${geist.variable} dark h-full antialiased`}>
       <body className="min-h-full bg-[#0a0a0a] text-white">
-        <Sidebar />
-        <main className="md:ml-64 min-h-screen relative pt-[56px] md:pt-0">
-          <NotificationManager />
-          <ProfileButton />
-          <PageTransition>{children}</PageTransition>
-        </main>
+        <Suspense>
+          <AccessGuard>
+            <Sidebar />
+            <main className="md:ml-64 min-h-screen relative pt-[56px] md:pt-0">
+              <NotificationManager />
+              <ProfileButton />
+              <PageTransition>{children}</PageTransition>
+            </main>
+          </AccessGuard>
+        </Suspense>
       </body>
     </html>
   )
