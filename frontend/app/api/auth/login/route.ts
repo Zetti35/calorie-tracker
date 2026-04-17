@@ -12,10 +12,12 @@ export async function POST(req: NextRequest) {
   
   // Если initData есть — пробуем верифицировать, но не блокируем при ошибке верификации
   // (Telegram иногда передаёт initData в нестандартном формате)
-  if (!initData && !isDev) {
-    return NextResponse.json({ error: 'Missing initData' }, { status: 401 })
+  if (!initData) {
+    // Без initData создаём анонимного пользователя с id=0 (только для dev)
+    if (!isDev) {
+      return NextResponse.json({ error: 'Missing initData' }, { status: 401 })
+    }
   }
-
   const tgUser = parseInitData(initData)
   if (!tgUser && !isDev) {
     return NextResponse.json({ error: 'Missing user data' }, { status: 401 })
