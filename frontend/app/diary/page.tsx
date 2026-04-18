@@ -512,9 +512,9 @@ export default function DiaryPage() {
                 const pct = m.target ? Math.min((m.value / m.target) * 100, 100) : null
                 return (
                   <div key={m.label}>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-white/50">{m.label}</span>
-                      <span className={m.textColor}>{Math.round(m.value)}г{m.target ? ` / ${m.target}г` : ''}</span>
+                    <div className="flex justify-between text-xs mb-1 gap-2">
+                      <span className="text-white/50 shrink-0">{m.label}</span>
+                      <span className={`${m.textColor} text-right`}>{Math.round(m.value)}г{m.target ? ` / ${m.target}г` : ''}</span>
                     </div>
                     <div className="h-1.5 bg-white/[0.08] rounded-full overflow-hidden">
                       <motion.div initial={{ width: 0 }} animate={{ width: `${pct ?? 50}%` }}
@@ -739,10 +739,10 @@ export default function DiaryPage() {
             { label: 'Углеводы', value: Math.round(totals.carbs),    unit: 'г',    color: 'text-green-300',  grad: 'from-green-500/20 to-green-900/10',   border: 'border-green-500/20' },
           ].map(m => (
             <motion.div key={m.label} variants={fadeUp} whileHover={{ scale: 1.03, y: -3 }}
-              className={`bg-gradient-to-br ${m.grad} backdrop-blur-md border ${m.border} rounded-2xl p-5 text-center hover:shadow-xl hover:shadow-black/40 transition-shadow`}>
-              <p className="text-xs font-semibold text-white/50 mb-3 uppercase tracking-widest">{m.label}</p>
-              <p className={`text-4xl font-black ${m.color} leading-none mb-2`}>{m.value}</p>
-              <p className="text-xs text-white/40">{m.unit}</p>
+              className={`bg-gradient-to-br ${m.grad} backdrop-blur-md border ${m.border} rounded-2xl p-4 text-center hover:shadow-xl hover:shadow-black/40 transition-shadow`}>
+              <p className="text-[10px] font-semibold text-white/50 mb-2 uppercase tracking-widest truncate">{m.label}</p>
+              <p className={`text-3xl font-black ${m.color} leading-none mb-1`}>{m.value}</p>
+              <p className="text-[10px] text-white/40">{m.unit}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -783,10 +783,10 @@ export default function DiaryPage() {
               const pct = m.target ? Math.min((m.value / m.target) * 100, 100) : null
               return (
                 <motion.div key={m.label} variants={fadeUp} whileHover={{ scale: 1.03, y: -3 }}
-                  className={`bg-gradient-to-br ${m.grad} backdrop-blur-md border ${m.border} rounded-2xl p-4 text-center hover:shadow-xl hover:shadow-black/40 transition-shadow`}>
-                  <p className="text-xs font-semibold text-white/50 mb-2 uppercase tracking-widest">{m.label}</p>
-                  <p className={`text-3xl font-black ${m.color} leading-none mb-1`}>{m.value}</p>
-                  <p className="text-xs text-white/30 mb-3">{m.unit}/день</p>
+                  className={`bg-gradient-to-br ${m.grad} backdrop-blur-md border ${m.border} rounded-2xl p-3 text-center hover:shadow-xl hover:shadow-black/40 transition-shadow`}>
+                  <p className="text-[9px] font-semibold text-white/50 mb-1 uppercase tracking-widest truncate">{m.label}</p>
+                  <p className={`text-2xl font-black ${m.color} leading-none mb-0.5`}>{m.value}</p>
+                  <p className="text-[9px] text-white/30 mb-2">{m.unit}/д</p>
                   {pct !== null && (
                     <div className="h-1 bg-white/[0.08] rounded-full overflow-hidden">
                       <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }}

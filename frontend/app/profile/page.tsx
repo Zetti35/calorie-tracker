@@ -167,24 +167,20 @@ export default function ProfilePage() {
       {userProfile && (
         <div className="grid grid-cols-2 gap-4 mb-8">
           {bmi && (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5">
-              <p className="text-xs text-white/40 uppercase tracking-wider mb-3">Индекс массы тела</p>
-              <div className="flex items-end gap-3">
-                <p className={`text-4xl font-black ${bmiColor}`}>{bmi}</p>
-                <p className={`text-sm font-semibold ${bmiColor} mb-1`}>{bmiLabel}</p>
-              </div>
-              <p className="text-xs text-white/30 mt-2">{userProfile.weight} кг · {userProfile.height} см</p>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-4">
+              <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">ИМТ</p>
+              <p className={`text-3xl font-black ${bmiColor} leading-none`}>{bmi}</p>
+              <p className={`text-xs font-semibold ${bmiColor} mt-1`}>{bmiLabel}</p>
+              <p className="text-[10px] text-white/30 mt-2">{userProfile.weight}кг · {userProfile.height}см</p>
             </div>
           )}
           {nutritionPlan && (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5">
-              <p className="text-xs text-white/40 uppercase tracking-wider mb-3">Норма КБЖУ</p>
-              <p className="text-3xl font-black text-orange-300 leading-none mb-2">{nutritionPlan.calories} <span className="text-sm font-normal text-white/40">ккал</span></p>
-              <div className="flex gap-3 text-xs">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-4">
+              <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">Норма КБЖУ</p>
+              <p className="text-3xl font-black text-orange-300 leading-none">{nutritionPlan.calories}<span className="text-xs font-normal text-white/40 ml-1">ккал</span></p>
+              <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] mt-2">
                 <span className="text-red-300">Б {nutritionPlan.protein}г</span>
-                <span className="text-white/20">·</span>
                 <span className="text-yellow-300">Ж {nutritionPlan.fat}г</span>
-                <span className="text-white/20">·</span>
                 <span className="text-green-300">У {nutritionPlan.carbs}г</span>
               </div>
             </div>
