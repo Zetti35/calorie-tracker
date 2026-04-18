@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY!
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
-const MODEL = 'meta-llama/llama-3.1-8b-instruct:free'
+const MODEL = 'mistralai/mistral-7b-instruct:free'
 
 export async function POST(req: NextRequest) {
   const { query } = await req.json()
