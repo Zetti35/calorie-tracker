@@ -6,6 +6,8 @@ import { useAppStore } from '@/lib/store'
 import type { FoodItem, DiaryEntry } from '@/types'
 import foodsData from '@/data/foods.json'
 import dynamic from 'next/dynamic'
+import AiFoodSearch from '@/components/AiFoodSearch'
+import AiAdvice from '@/components/AiAdvice'
 
 const BarcodeScanner = dynamic(() => import('@/components/BarcodeScanner'), { ssr: false })
 
@@ -278,7 +280,7 @@ export default function DiaryPage() {
       </div>
 
       {/* Add form — available for all dates */}
-      <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-700/60 rounded-3xl p-7 mb-6">
+      <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-700/60 rounded-3xl p-7 mb-4">
           <p className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-5">Добавить продукт</p>
 
         {/* Favorites */}
@@ -490,6 +492,19 @@ export default function DiaryPage() {
             )}
           </AnimatePresence>
         </div>
+
+      {/* AI Food Search */}
+      <div className="mb-4">
+        <AiFoodSearch onAdd={(food) => {
+          const timestamp = activeDate === todayStr
+            ? new Date().toISOString()
+            : new Date(`${activeDate}T12:00:00`).toISOString()
+          const entry: DiaryEntry = { id: crypto.randomUUID(), food, grams: 100, timestamp }
+          addEntry(entry)
+          addRecentFood(food.name)
+          if (!foods.some(f => f.name === food.name)) addCustomFood(food)
+        }} />
+      </div>
 
       {/* Stats block */}
       {dayEntries.length > 0 && (
@@ -746,6 +761,20 @@ export default function DiaryPage() {
             </motion.div>
           ))}
         </motion.div>
+      )}
+
+      {/* AI Advice */}
+      {dayEntries.length > 0 && (
+        <div className="mt-4 mb-2">
+          <AiAdvice
+            calories={Math.round(totals.calories)}
+            protein={Math.round(totals.protein)}
+            fat={Math.round(totals.fat)}
+            carbs={Math.round(totals.carbs)}
+            targetCalories={nutritionPlan?.calories}
+            goal={nutritionPlan?.goal}
+          />
+        </div>
       )}
 
       {/* Weekly average */}
