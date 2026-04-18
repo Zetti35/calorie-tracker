@@ -1,5 +1,6 @@
 'use client'
 import { useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { CreditCard, Lock } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
@@ -12,6 +13,7 @@ type Props = {
 
 export default function AccessGuard({ children }: Props) {
   const { status, isLoading, acceptTerms, createPayment, refreshStatus } = useAuth()
+  const pathname = usePathname()
 
   // Проверяем редирект после оплаты
   useEffect(() => {
@@ -20,6 +22,11 @@ export default function AccessGuard({ children }: Props) {
       window.history.replaceState({}, '', '/')
     }
   }, [refreshStatus])
+
+  // Страница /admin не требует проверки доступа
+  if (pathname?.startsWith('/admin')) {
+    return <>{children}</>
+  }
 
   async function handlePayment() {
     try {
