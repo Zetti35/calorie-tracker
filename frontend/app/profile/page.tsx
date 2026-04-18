@@ -131,6 +131,17 @@ export default function ProfilePage() {
         </div>
       )}
 
+      {/* Кнопка админ панели — только для владельца */}
+      {tgUser?.telegram_id === 970308869 && (
+        <motion.a
+          href="/admin"
+          whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+          className="mt-3 flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-semibold hover:bg-purple-500/20 transition-all"
+        >
+          🛡️ Админ панель
+        </motion.a>
+      )}
+
       <div className="h-px bg-white/[0.06] my-8" />
 
       {/* Stats */}
