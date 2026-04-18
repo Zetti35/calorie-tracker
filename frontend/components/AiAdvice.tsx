@@ -24,9 +24,14 @@ export default function AiAdvice({ calories, protein, fat, carbs, targetCalories
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ calories, protein, fat, carbs, targetCalories, goal }),
       })
-      if (!res.ok) return
+      if (!res.ok) {
+        setAdvice('Не удалось получить совет. Попробуй позже.')
+        return
+      }
       const data = await res.json()
-      setAdvice(data.advice)
+      setAdvice(data.advice || 'Нет данных.')
+    } catch {
+      setAdvice('Ошибка сети. Попробуй позже.')
     } finally {
       setLoading(false)
     }
