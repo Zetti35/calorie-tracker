@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY!
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY!
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
+const MODEL = 'meta-llama/llama-3.1-8b-instruct:free'
 
 export async function POST(req: NextRequest) {
   const { query } = await req.json()
@@ -24,24 +25,31 @@ export async function POST(req: NextRequest) {
 Все числа — целые или с одним знаком после запятой.`
 
   try {
-    const res = await fetch(GEMINI_URL, {
+    const res = await fetch(OPENROUTER_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'HTTP-Referer': 'https://calorie-tracker.app',
+        'X-Title': 'Calorie Tracker',
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 200 },
+        model: MODEL,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.1,
+        max_tokens: 200,
       }),
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(10000),
     })
 
     if (!res.ok) {
       const err = await res.text()
-      console.error('Gemini error:', err)
+      console.error('OpenRouter error:', err)
       return NextResponse.json({ error: 'AI error' }, { status: 500 })
     }
 
     const data = await res.json()
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+    const text = data.choices?.[0]?.message?.content ?? ''
 
     // Извлекаем JSON из ответа
     const jsonMatch = text.match(/\{[\s\S]*\}/)
@@ -52,7 +60,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ food })
   } catch (err) {
-    console.error('Gemini request failed:', err)
+    console.error('OpenRouter request failed:', err)
     return NextResponse.json({ error: 'Request failed' }, { status: 500 })
   }
 }
