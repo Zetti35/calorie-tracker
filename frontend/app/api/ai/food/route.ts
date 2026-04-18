@@ -10,6 +10,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No query' }, { status: 400 })
   }
 
+  if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'your_openrouter_api_key_here') {
+    return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
+  }
+
   const prompt = `Ты эксперт по питанию. Пользователь ввёл название продукта: "${query}".
 
 Верни ТОЛЬКО JSON объект (без markdown, без пояснений) с КБЖУ на 100г продукта:
@@ -44,8 +48,8 @@ export async function POST(req: NextRequest) {
 
     if (!res.ok) {
       const err = await res.text()
-      console.error('OpenRouter error:', err)
-      return NextResponse.json({ error: 'AI error' }, { status: 500 })
+      console.error('OpenRouter error status:', res.status, err)
+      return NextResponse.json({ error: 'AI error', status: res.status, detail: err }, { status: 500 })
     }
 
     const data = await res.json()
