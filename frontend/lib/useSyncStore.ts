@@ -77,9 +77,12 @@ export function useSyncStore() {
     }
 
     const unsubscribe = useAppStore.subscribe((state) => {
+      console.log('[useSyncStore] Store changed, scheduling sync...')
+      
       // Clear existing timer
       if (debounceTimer) {
         clearTimeout(debounceTimer)
+        console.log('[useSyncStore] Cleared previous timer')
       }
 
       // Set new timer
@@ -92,11 +95,19 @@ export function useSyncStore() {
         // Remove _sync from state before sending
         const { _sync, ...dataToSync } = currentState as any
 
+        console.log('[useSyncStore] Syncing data:', {
+          entries: dataToSync.entries?.length || 0,
+          water: Object.keys(dataToSync.water || {}).length,
+        })
+
         // Sync to server
         const result = await syncToServer(dataToSync)
 
+        console.log('[useSyncStore] Sync result:', result)
+
         if (result.success && result.updated_at) {
           // Update lastSyncedAt
+          console.log('[useSyncStore] ✅ Sync successful')
           useAppStore.setState({
             _sync: {
               status: 'idle',
@@ -107,9 +118,11 @@ export function useSyncStore() {
           } as any)
         } else if (result.error) {
           // Update error state
+          console.error('[useSyncStore] ❌ Sync failed:', result.error)
+          const currentSync = (useAppStore.getState() as any)._sync
           useAppStore.setState({
             _sync: {
-              ..._sync,
+              ...currentSync,
               status: 'error',
               error: result.error,
               pendingSync: true,
