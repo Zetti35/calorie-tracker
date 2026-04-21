@@ -1,43 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY!
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
-const MODEL = 'nvidia/llama-3.1-nemotron-nano-8b-v1:free'
+const HF_TOKEN = process.env.HF_TOKEN!
+const HF_URL = 'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-1.5B-Instruct'
 
 export async function POST(req: NextRequest) {
   const { calories, protein, fat, carbs, goal, targetCalories } = await req.json()
 
-  const prompt = `Ты диетолог. Дай короткий персональный совет по питанию на русском языке (2-3 предложения максимум).
-
-Данные пользователя за сегодня:
-- Съедено калорий: ${calories} ккал (норма: ${targetCalories ?? 'не указана'} ккал)
-- Белки: ${protein}г, Жиры: ${fat}г, Углеводы: ${carbs}г
-- Цель: ${goal ?? 'не указана'}
-
-Дай конкретный практичный совет что добавить или убрать из рациона сегодня. Без приветствий, сразу к делу.`
+  const prompt = `Ты диетолог. Дай короткий совет (2-3 предложения) на русском.
+Данные: ${calories} ккал (норма ${targetCalories ?? '?'}), Б${protein}г Ж${fat}г У${carbs}г, цель: ${goal ?? '?'}.
+Что добавить/убрать из рациона сегодня? Без приветствий.`
 
   try {
-    const res = await fetch(OPENROUTER_URL, {
+    const res = await fetch(HF_URL, {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${HF_TOKEN}`,
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'HTTP-Referer': 'https://calorie-tracker.app',
-        'X-Title': 'Calorie Tracker',
       },
       body: JSON.stringify({
-        model: MODEL,
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
-        max_tokens: 150,
+        inputs: prompt,
+        parameters: { max_new_tokens: 150, temperature: 0.7 },
       }),
-      signal: AbortSignal.timeout(10000),
     })
 
     if (!res.ok) return NextResponse.json({ error: 'AI error' }, { status: 500 })
 
     const data = await res.json()
-    const advice = data.choices?.[0]?.message?.content ?? ''
+    const advice = data[0]?.generated_text ?? ''
 
     return NextResponse.json({ advice: advice.trim() })
   } catch {
