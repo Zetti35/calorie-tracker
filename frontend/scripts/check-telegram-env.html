@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Check Telegram Environment</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body style="background: #0a0a0a; color: white; font-family: monospace; padding: 20px;">
+  <h1>🔍 Telegram Environment Check</h1>
+  <div id="output"></div>
+
+  <script>
+    const output = document.getElementById('output');
+    
+    function log(msg, color = 'white') {
+      output.innerHTML += `<div style="color: ${color}; margin: 5px 0;">${msg}</div>`;
+    }
+
+    // Check if Telegram WebApp is available
+    if (window.Telegram && window.Telegram.WebApp) {
+      log('✅ Telegram WebApp is available', 'lime');
+      
+      const initData = window.Telegram.WebApp.initData;
+      if (initData) {
+        log('✅ initData is available', 'lime');
+        log(`   Length: ${initData.length} characters`, 'cyan');
+        log(`   Preview: ${initData.substring(0, 50)}...`, 'cyan');
+      } else {
+        log('❌ initData is EMPTY', 'red');
+        log('   This means you are NOT in Telegram Mini App environment', 'yellow');
+        log('   Sync will NOT work without initData', 'yellow');
+      }
+
+      const user = window.Telegram.WebApp.initDataUnsafe?.user;
+      if (user) {
+        log('✅ User data available', 'lime');
+        log(`   ID: ${user.id}`, 'cyan');
+        log(`   Name: ${user.first_name}`, 'cyan');
+      } else {
+        log('❌ User data NOT available', 'red');
+      }
+    } else {
+      log('❌ Telegram WebApp is NOT available', 'red');
+      log('   You are NOT in Telegram Mini App environment', 'yellow');
+    }
+
+    log('\n📝 To test sync properly:', 'white');
+    log('   1. Deploy to Vercel', 'white');
+    log('   2. Open in Telegram Mini App', 'white');
+    log('   3. Then sync will work', 'white');
+  </script>
+</body>
+</html>

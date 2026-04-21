@@ -6,6 +6,7 @@ import PageTransition from '@/components/layout/PageTransition'
 import ProfileButton from '@/components/layout/ProfileButton'
 import NotificationManager from '@/components/NotificationManager'
 import AccessGuard from '@/components/AccessGuard'
+import { SyncProvider } from '@/components/SyncProvider'
 
 const geist = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 
@@ -22,13 +23,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-full bg-[#0a0a0a] text-white">
         <AccessGuard>
+          <SyncProvider>
             <Sidebar />
             <main className="md:ml-64 min-h-screen relative pt-[56px] md:pt-0">
               <NotificationManager />
               <ProfileButton />
               <PageTransition>{children}</PageTransition>
             </main>
-          </AccessGuard>
+          </SyncProvider>
+        </AccessGuard>
       </body>
     </html>
   )

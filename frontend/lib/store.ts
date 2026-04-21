@@ -2,6 +2,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { NutritionPlan, DiaryEntry, UserProfile, FoodItem } from '@/types'
+import { syncMiddleware, type SyncState } from './syncMiddleware'
+import { initializeSync } from './syncInitialization'
+import { migrateLocalData } from './migration'
 
 type TrainingState = {
   selectedLevel: string | null
@@ -14,6 +17,9 @@ type ReminderTime = { time: string; label: string }
 type RemindersState = { enabled: boolean; times: ReminderTime[] }
 
 type AppState = {
+  // Sync state
+  _sync: SyncState
+
   // Калькулятор
   nutritionPlan: (NutritionPlan & { bmr: number; tdee: number; goal: string }) | null
   userProfile: UserProfile | null
@@ -75,6 +81,14 @@ export { getWeekKey }
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
+      // Sync state
+      _sync: {
+        status: 'idle',
+        lastSyncedAt: null,
+        pendingSync: false,
+        error: null,
+      },
+
       nutritionPlan: null,
       userProfile: null,
       setNutritionPlan: (plan, profile) => set((s) => ({
