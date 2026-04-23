@@ -5,12 +5,18 @@ import { createHmac } from 'crypto'
  * https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
  */
 export function verifyInitData(initData: string, botToken: string): boolean {
-  if (!initData || !botToken) return false
+  if (!initData || !botToken) {
+    console.error('[verifyInitData] Missing initData or botToken')
+    return false
+  }
 
   try {
     const params = new URLSearchParams(initData)
     const hash = params.get('hash')
-    if (!hash) return false
+    if (!hash) {
+      console.error('[verifyInitData] No hash in initData')
+      return false
+    }
 
     // Remove hash from parameters
     params.delete('hash')
@@ -21,6 +27,8 @@ export function verifyInitData(initData: string, botToken: string): boolean {
       .map(([k, v]) => `${k}=${v}`)
       .join('\n')
 
+    console.log('[verifyInitData] dataCheckString length:', dataCheckString.length)
+
     // secret_key = HMAC-SHA256(bot_token, "WebAppData")
     const secretKey = createHmac('sha256', 'WebAppData').update(botToken).digest()
 
@@ -29,7 +37,15 @@ export function verifyInitData(initData: string, botToken: string): boolean {
       .update(dataCheckString)
       .digest('hex')
 
-    return computedHash === hash
+    const isValid = computedHash === hash
+    console.log('[verifyInitData] Hash match:', isValid)
+    
+    if (!isValid) {
+      console.log('[verifyInitData] Expected hash:', hash)
+      console.log('[verifyInitData] Computed hash:', computedHash)
+    }
+
+    return isValid
   } catch (error) {
     console.error('[verifyInitData] Error:', error)
     return false

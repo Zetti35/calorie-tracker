@@ -15,7 +15,24 @@ export async function POST(request: NextRequest) {
   try {
     // 1. Validate Telegram initData
     const initData = request.headers.get('x-telegram-init-data')
-    if (!initData || !verifyInitData(initData, BOT_TOKEN)) {
+    console.log('[POST /api/sync] initData present:', !!initData)
+    console.log('[POST /api/sync] BOT_TOKEN present:', !!BOT_TOKEN)
+    
+    if (!initData) {
+      console.error('[POST /api/sync] No initData in headers')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    if (!BOT_TOKEN) {
+      console.error('[POST /api/sync] BOT_TOKEN not configured')
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+    }
+    
+    const isValid = verifyInitData(initData, BOT_TOKEN)
+    console.log('[POST /api/sync] initData valid:', isValid)
+    
+    if (!isValid) {
+      console.error('[POST /api/sync] initData verification failed')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -89,7 +106,24 @@ export async function GET(request: NextRequest) {
   try {
     // 1. Validate Telegram initData
     const initData = request.headers.get('x-telegram-init-data')
-    if (!initData || !verifyInitData(initData, BOT_TOKEN)) {
+    console.log('[GET /api/sync] initData present:', !!initData)
+    console.log('[GET /api/sync] BOT_TOKEN present:', !!BOT_TOKEN)
+    
+    if (!initData) {
+      console.error('[GET /api/sync] No initData in headers')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    if (!BOT_TOKEN) {
+      console.error('[GET /api/sync] BOT_TOKEN not configured')
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+    }
+    
+    const isValid = verifyInitData(initData, BOT_TOKEN)
+    console.log('[GET /api/sync] initData valid:', isValid)
+    
+    if (!isValid) {
+      console.error('[GET /api/sync] initData verification failed')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
