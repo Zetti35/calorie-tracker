@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
-import { verifyInitData, parseInitData } from '@/lib/telegram'
+import { parseInitData } from '@/lib/telegram'
+import { verifyInitData } from '@/lib/telegramServer'
 import { computeAccessStatus, type AuthResponse } from '@/lib/access'
 
 export async function POST(req: NextRequest) {
