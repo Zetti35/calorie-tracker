@@ -22,13 +22,21 @@ export function verifyInitData(initData: string, botToken: string): boolean {
     params.delete('hash')
     params.delete('signature')
 
+    // Build data_check_string from unique parameters only (URLSearchParams may have duplicates)
+    const uniqueParams = new Map<string, string>()
+    for (const [key, value] of params.entries()) {
+      if (!uniqueParams.has(key)) {
+        uniqueParams.set(key, value)
+      }
+    }
+
     // Sort remaining parameters by key and build data_check_string
-    const dataCheckString = Array.from(params.entries())
+    const dataCheckString = Array.from(uniqueParams.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([k, v]) => `${k}=${v}`)
       .join('\n')
 
-    console.log('[verifyInitData] Parameters:', Array.from(params.keys()).join(', '))
+    console.log('[verifyInitData] Parameters:', Array.from(uniqueParams.keys()).join(', '))
     console.log('[verifyInitData] dataCheckString preview:', dataCheckString.substring(0, 100) + '...')
 
     // secret_key = HMAC-SHA256(bot_token, "WebAppData")
