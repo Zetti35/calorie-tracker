@@ -11,32 +11,33 @@ export function verifyInitData(initData: string, botToken: string): boolean {
   }
 
   try {
-    const params = new URLSearchParams(initData)
-    const hash = params.get('hash')
+    // Manual parsing to avoid URLSearchParams issues with duplicate keys
+    const pairs = initData.split('&')
+    const params = new Map<string, string>()
+    let hash = ''
+
+    for (const pair of pairs) {
+      const [key, value] = pair.split('=')
+      if (key === 'hash') {
+        hash = value
+      } else if (key !== 'signature' && !params.has(key)) {
+        // Skip signature and only take first occurrence of each key
+        params.set(key, value)
+      }
+    }
+
     if (!hash) {
       console.error('[verifyInitData] No hash in initData')
       return false
     }
 
-    // Remove hash and signature from parameters (signature is not part of verification)
-    params.delete('hash')
-    params.delete('signature')
-
-    // Build data_check_string from unique parameters only (URLSearchParams may have duplicates)
-    const uniqueParams = new Map<string, string>()
-    for (const [key, value] of params.entries()) {
-      if (!uniqueParams.has(key)) {
-        uniqueParams.set(key, value)
-      }
-    }
-
-    // Sort remaining parameters by key and build data_check_string
-    const dataCheckString = Array.from(uniqueParams.entries())
+    // Sort parameters by key and build data_check_string
+    const dataCheckString = Array.from(params.entries())
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([k, v]) => `${k}=${v}`)
+      .map(([k, v]) => `${k}=${decodeURIComponent(v)}`)
       .join('\n')
 
-    console.log('[verifyInitData] Parameters:', Array.from(uniqueParams.keys()).join(', '))
+    console.log('[verifyInitData] Parameters:', Array.from(params.keys()).join(', '))
     console.log('[verifyInitData] dataCheckString preview:', dataCheckString.substring(0, 100) + '...')
 
     // secret_key = HMAC-SHA256(bot_token, "WebAppData")
@@ -53,6 +54,8 @@ export function verifyInitData(initData: string, botToken: string): boolean {
     if (!isValid) {
       console.log('[verifyInitData] Expected hash:', hash.substring(0, 16) + '...')
       console.log('[verifyInitData] Computed hash:', computedHash.substring(0, 16) + '...')
+      console.log('[verifyInitData] Full expected hash:', hash)
+      console.log('[verifyInitData] Full computed hash:', computedHash)
     }
 
     return isValid
