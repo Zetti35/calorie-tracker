@@ -4,16 +4,26 @@ import { createServerClient } from '@/lib/supabase'
 export async function POST(req: NextRequest) {
   console.log('[Webhook] Received payment webhook')
   
-  // lava.top отправляет X-Api-Key заголовок для верификации
+  // lava.top отправляет Basic Auth заголовок для верификации
   const webhookSecret = process.env.LAVA_WEBHOOK_SECRET
-  const apiKey = req.headers.get('x-api-key')
+  const authHeader = req.headers.get('authorization')
   
   console.log('[Webhook] Secret configured:', !!webhookSecret)
-  console.log('[Webhook] API Key present:', !!apiKey)
+  console.log('[Webhook] Auth header present:', !!authHeader)
   
-  if (webhookSecret) {
-    if (apiKey !== webhookSecret) {
-      console.error('[Webhook] Invalid API key')
+  if (webhookSecret && authHeader) {
+    // Basic Auth формат: "Basic base64(username:password)"
+    // Lava.top отправляет в формате "user:pass"
+    const base64Credentials = authHeader.replace('Basic ', '')
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8')
+    console.log('[Webhook] Decoded credentials format:', credentials.includes(':') ? 'valid' : 'invalid')
+    
+    // Извлекаем пароль (после двоеточия)
+    const password = credentials.split(':')[1]
+    console.log('[Webhook] Password match:', password === webhookSecret)
+    
+    if (password !== webhookSecret) {
+      console.error('[Webhook] Invalid credentials')
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
   }
