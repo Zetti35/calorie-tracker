@@ -122,6 +122,33 @@ export default function DebugSyncPage() {
     }
   }
 
+  const testDataCheckString = async () => {
+    const telegram = (window as any).Telegram
+    const initData = telegram?.WebApp?.initData
+    
+    if (!initData) {
+      console.error('[DEBUG] No initData available')
+      return
+    }
+
+    console.log('[DEBUG] Testing dataCheckString generation...')
+    
+    try {
+      const response = await fetch('/api/debug-datacheck', {
+        method: 'POST',
+        headers: {
+          'x-telegram-init-data': initData,
+        },
+      })
+
+      const result = await response.json()
+      console.log('[DEBUG] dataCheckString:', result.dataCheckString)
+      console.log('[DEBUG] Full result:', result)
+    } catch (error) {
+      console.error('[DEBUG] dataCheckString test failed:', error)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white p-4">
       <h1 className="text-2xl font-bold mb-4">🐛 Sync Debug Console</h1>
@@ -154,6 +181,12 @@ export default function DebugSyncPage() {
           className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded text-sm"
         >
           Show RAW initData
+        </button>
+        <button
+          onClick={testDataCheckString}
+          className="bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded text-sm"
+        >
+          Show dataCheckString
         </button>
         <button
           onClick={testInitDataVerification}
