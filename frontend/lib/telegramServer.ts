@@ -43,7 +43,8 @@ export function verifyInitData(initData: string, botToken: string): boolean {
     const dataCheckString = dataCheckPairs.sort().join('\n')
 
     console.log('[verifyInitData] Parameters:', Array.from(seenKeys).join(', '))
-    console.log('[verifyInitData] dataCheckString preview:', dataCheckString.substring(0, 150))
+    console.log('[verifyInitData] dataCheckString FULL:', dataCheckString)
+    console.log('[verifyInitData] dataCheckString length:', dataCheckString.length)
 
     // secret_key = HMAC-SHA256(bot_token, "WebAppData")
     const secretKey = createHmac('sha256', 'WebAppData').update(botToken).digest()
@@ -55,10 +56,12 @@ export function verifyInitData(initData: string, botToken: string): boolean {
 
     const isValid = computedHash === hash
     console.log('[verifyInitData] Hash match:', isValid)
+    console.log('[verifyInitData] Expected hash:', hash)
+    console.log('[verifyInitData] Computed hash:', computedHash)
     
     if (!isValid) {
-      console.log('[verifyInitData] Expected hash:', hash)
-      console.log('[verifyInitData] Computed hash:', computedHash)
+      console.log('[verifyInitData] MISMATCH - dumping full dataCheckString:')
+      console.log(dataCheckString)
     }
 
     return isValid
