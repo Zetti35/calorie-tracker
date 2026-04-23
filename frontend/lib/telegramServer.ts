@@ -27,7 +27,8 @@ export function verifyInitData(initData: string, botToken: string): boolean {
       .map(([k, v]) => `${k}=${v}`)
       .join('\n')
 
-    console.log('[verifyInitData] dataCheckString length:', dataCheckString.length)
+    console.log('[verifyInitData] Parameters:', Array.from(params.keys()).join(', '))
+    console.log('[verifyInitData] dataCheckString preview:', dataCheckString.substring(0, 100) + '...')
 
     // secret_key = HMAC-SHA256(bot_token, "WebAppData")
     const secretKey = createHmac('sha256', 'WebAppData').update(botToken).digest()
@@ -41,8 +42,8 @@ export function verifyInitData(initData: string, botToken: string): boolean {
     console.log('[verifyInitData] Hash match:', isValid)
     
     if (!isValid) {
-      console.log('[verifyInitData] Expected hash:', hash)
-      console.log('[verifyInitData] Computed hash:', computedHash)
+      console.log('[verifyInitData] Expected hash:', hash.substring(0, 16) + '...')
+      console.log('[verifyInitData] Computed hash:', computedHash.substring(0, 16) + '...')
     }
 
     return isValid
