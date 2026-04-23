@@ -5,15 +5,6 @@ import { verifyInitData } from '@/lib/telegramServer'
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!
 
-// TODO: Fix initData verification
-// Currently verification is disabled for testing
-// Issue: HMAC hash doesn't match - need to investigate why
-// Possible causes:
-// 1. initData format changed
-// 2. Bot token mismatch
-// 3. Encoding issues
-// See logs in Vercel for details
-
 /**
  * POST /api/sync - Save user state to Supabase
  * 
@@ -40,12 +31,10 @@ export async function POST(request: NextRequest) {
     const isValid = verifyInitData(initData, BOT_TOKEN)
     console.log('[POST /api/sync] initData valid:', isValid)
     
-    // TEMPORARY: Skip verification for testing
-    // TODO: Fix initData verification
-    // if (!isValid) {
-    //   console.error('[POST /api/sync] initData verification failed')
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    // }
+    if (!isValid) {
+      console.error('[POST /api/sync] initData verification failed')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     // 2. Extract telegram_id
     const telegramUser = parseInitData(initData)
@@ -133,12 +122,10 @@ export async function GET(request: NextRequest) {
     const isValid = verifyInitData(initData, BOT_TOKEN)
     console.log('[GET /api/sync] initData valid:', isValid)
     
-    // TEMPORARY: Skip verification for testing
-    // TODO: Fix initData verification
-    // if (!isValid) {
-    //   console.error('[GET /api/sync] initData verification failed')
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    // }
+    if (!isValid) {
+      console.error('[GET /api/sync] initData verification failed')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     // 2. Extract telegram_id
     const telegramUser = parseInitData(initData)

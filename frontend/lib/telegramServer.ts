@@ -18,8 +18,9 @@ export function verifyInitData(initData: string, botToken: string): boolean {
       return false
     }
 
-    // Remove hash from parameters
+    // Remove hash and signature from parameters (signature is not part of verification)
     params.delete('hash')
+    params.delete('signature')
 
     // Sort remaining parameters by key and build data_check_string
     const dataCheckString = Array.from(params.entries())
