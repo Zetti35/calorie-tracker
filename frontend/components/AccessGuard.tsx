@@ -14,8 +14,6 @@ type Props = {
 export default function AccessGuard({ children }: Props) {
   const { status, isLoading, acceptTerms, createPayment, refreshStatus } = useAuth()
   const pathname = usePathname()
-  const [checkLoading, setCheckLoading] = useState(false)
-  const [checkMessage, setCheckMessage] = useState<string | null>(null)
 
   // Проверяем редирект после оплаты
   useEffect(() => {
@@ -41,35 +39,6 @@ export default function AccessGuard({ children }: Props) {
       }
     } catch {
       alert('Ошибка при создании платежа. Попробуй ещё раз.')
-    }
-  }
-
-  async function handleCheckPayment() {
-    setCheckLoading(true)
-    setCheckMessage(null)
-    try {
-      const initData = (window as any).Telegram?.WebApp?.initData || ''
-      const response = await fetch('/api/payment/check', {
-        method: 'POST',
-        headers: {
-          'x-telegram-init-data': initData,
-        },
-      })
-
-      const data = await response.json()
-      
-      if (data.success) {
-        setCheckMessage(data.message)
-        // Refresh auth status to update UI
-        await refreshStatus()
-      } else {
-        setCheckMessage(data.message || 'Оплата не найдена')
-      }
-    } catch (err) {
-      console.error('Check payment error:', err)
-      setCheckMessage('Ошибка при проверке оплаты')
-    } finally {
-      setCheckLoading(false)
     }
   }
 
@@ -120,31 +89,6 @@ export default function AccessGuard({ children }: Props) {
               <CreditCard className="w-5 h-5" />
               Оплатить 50 ₽
             </motion.button>
-
-            <motion.button
-              onClick={handleCheckPayment}
-              disabled={checkLoading}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full h-12 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white font-medium text-sm rounded-xl transition-all disabled:opacity-50"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              {checkLoading ? 'Проверяем...' : 'Проверить оплату'}
-            </motion.button>
-
-            {checkMessage && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`text-xs text-center py-3 px-4 rounded-xl ${
-                  checkMessage.includes('успешно') || checkMessage.includes('активна')
-                    ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                    : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
-                }`}
-              >
-                {checkMessage}
-              </motion.div>
-            )}
           </div>
         </motion.div>
       </div>

@@ -38,8 +38,6 @@ export default function ProfilePage() {
   const { userProfile, nutritionPlan, setNutritionPlan, entries, clearDiary, calcHistory, clearCalcHistory, training, reminders, setReminders } = useAppStore()
   const { user: tgUser, status, createPayment, refreshStatus } = useAuth()
   const [payLoading, setPayLoading] = useState(false)
-  const [checkLoading, setCheckLoading] = useState(false)
-  const [checkMessage, setCheckMessage] = useState<string | null>(null)
 
   async function handlePayment() {
     setPayLoading(true)
@@ -55,35 +53,6 @@ export default function ProfilePage() {
       alert('Ошибка при создании платежа. Попробуй ещё раз.')
     } finally {
       setPayLoading(false)
-    }
-  }
-
-  async function handleCheckPayment() {
-    setCheckLoading(true)
-    setCheckMessage(null)
-    try {
-      const initData = (window as any).Telegram?.WebApp?.initData || ''
-      const response = await fetch('/api/payment/check', {
-        method: 'POST',
-        headers: {
-          'x-telegram-init-data': initData,
-        },
-      })
-
-      const data = await response.json()
-      
-      if (data.success) {
-        setCheckMessage(data.message)
-        // Refresh auth status to update UI
-        await refreshStatus()
-      } else {
-        setCheckMessage(data.message || 'Оплата не найдена')
-      }
-    } catch (err) {
-      console.error('Check payment error:', err)
-      setCheckMessage('Ошибка при проверке оплаты')
-    } finally {
-      setCheckLoading(false)
     }
   }
 
@@ -161,35 +130,6 @@ export default function ProfilePage() {
               </motion.button>
             )}
           </div>
-          
-          {/* Кнопка проверки оплаты */}
-          {(status?.type === 'trial' || status?.type === 'expired') && (
-            <div className="space-y-2">
-              <motion.button
-                onClick={handleCheckPayment}
-                disabled={checkLoading}
-                whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/70 text-sm font-medium hover:bg-white/10 hover:text-white disabled:opacity-50 transition-all"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                {checkLoading ? 'Проверяем...' : 'Проверить оплату'}
-              </motion.button>
-              
-              {checkMessage && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`text-xs text-center py-2 px-3 rounded-lg ${
-                    checkMessage.includes('успешно') || checkMessage.includes('активна')
-                      ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                      : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
-                  }`}
-                >
-                  {checkMessage}
-                </motion.div>
-              )}
-            </div>
-          )}
         </div>
       )}
 
