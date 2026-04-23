@@ -25,15 +25,29 @@ export async function POST(request: NextRequest) {
     // Verify
     const isValid = verifyInitData(initData, BOT_TOKEN)
     
+    // Get detailed verification info
+    const hash = params.get('hash')
+    params.delete('hash')
+    params.delete('signature')
+    
+    const dataCheckString = Array.from(params.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`)
+      .join('\n')
+    
     return NextResponse.json({
       valid: isValid,
       botTokenPresent: !!BOT_TOKEN,
       botTokenLength: BOT_TOKEN?.length || 0,
       initDataLength: initData.length,
       parameters: Object.keys(allParams),
+      parametersAfterFilter: Array.from(params.keys()),
       user: user,
       hasHash: !!allParams.hash,
       hashLength: allParams.hash?.length || 0,
+      hasSignature: !!allParams.signature,
+      dataCheckStringPreview: dataCheckString.substring(0, 200),
+      hashPreview: hash?.substring(0, 16),
     })
   } catch (error: any) {
     console.error('[debug-init-data] Error:', error)
