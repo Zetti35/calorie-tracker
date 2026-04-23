@@ -36,8 +36,10 @@ const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transi
 
 export default function ProfilePage() {
   const { userProfile, nutritionPlan, setNutritionPlan, entries, clearDiary, calcHistory, clearCalcHistory, training, reminders, setReminders } = useAppStore()
-  const { user: tgUser, status, createPayment } = useAuth()
+  const { user: tgUser, status, createPayment, refreshStatus } = useAuth()
   const [payLoading, setPayLoading] = useState(false)
+  const [checkLoading, setCheckLoading] = useState(false)
+  const [checkMessage, setCheckMessage] = useState<string | null>(null)
 
   async function handlePayment() {
     setPayLoading(true)
@@ -53,6 +55,35 @@ export default function ProfilePage() {
       alert('Ошибка при создании платежа. Попробуй ещё раз.')
     } finally {
       setPayLoading(false)
+    }
+  }
+
+  async function handleCheckPayment() {
+    setCheckLoading(true)
+    setCheckMessage(null)
+    try {
+      const initData = (window as any).Telegram?.WebApp?.initData || ''
+      const response = await fetch('/api/payment/check', {
+        method: 'POST',
+        headers: {
+          'x-telegram-init-data': initData,
+        },
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        setCheckMessage(data.message)
+        // Refresh auth status to update UI
+        await refreshStatus()
+      } else {
+        setCheckMessage(data.message || 'Оплата не найдена')
+      }
+    } catch (err) {
+      console.error('Check payment error:', err)
+      setCheckMessage('Ошибка при проверке оплаты')
+    } finally {
+      setCheckLoading(false)
     }
   }
 
@@ -102,31 +133,62 @@ export default function ProfilePage() {
 
       {/* Блок аккаунта */}
       {tgUser && (
-        <div className="mt-6 bg-zinc-900/80 border border-zinc-700/60 rounded-2xl p-5 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-white">{tgUser.first_name}{tgUser.username ? ` @${tgUser.username}` : ''}</p>
-            <div className="flex items-center gap-1.5 mt-1">
-              {status?.type === 'subscribed' && (
-                <><CheckCircle2 className="w-3.5 h-3.5 text-green-400" /><span className="text-xs text-green-400">Доступ активен</span></>
-              )}
-              {status?.type === 'trial' && (
-                <><Clock className="w-3.5 h-3.5 text-blue-400" /><span className="text-xs text-blue-400">Пробный период · {status.remaining_hours} ч</span></>
-              )}
-              {status?.type === 'expired' && (
-                <><CreditCard className="w-3.5 h-3.5 text-orange-400" /><span className="text-xs text-orange-400">Требуется оплата</span></>
+        <div className="mt-6 bg-zinc-900/80 border border-zinc-700/60 rounded-2xl p-5">
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <div>
+              <p className="text-sm font-semibold text-white">{tgUser.first_name}{tgUser.username ? ` @${tgUser.username}` : ''}</p>
+              <div className="flex items-center gap-1.5 mt-1">
+                {status?.type === 'subscribed' && (
+                  <><CheckCircle2 className="w-3.5 h-3.5 text-green-400" /><span className="text-xs text-green-400">Доступ активен</span></>
+                )}
+                {status?.type === 'trial' && (
+                  <><Clock className="w-3.5 h-3.5 text-blue-400" /><span className="text-xs text-blue-400">Пробный период · {status.remaining_hours} ч</span></>
+                )}
+                {status?.type === 'expired' && (
+                  <><CreditCard className="w-3.5 h-3.5 text-orange-400" /><span className="text-xs text-orange-400">Требуется оплата</span></>
+                )}
+              </div>
+            </div>
+            {(status?.type === 'trial' || status?.type === 'expired') && (
+              <motion.button
+                onClick={handlePayment}
+                disabled={payLoading}
+                whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500/15 border border-orange-500/25 text-orange-400 text-sm font-semibold hover:bg-orange-500/25 disabled:opacity-50 transition-all shrink-0"
+              >
+                <CreditCard className="w-4 h-4" />
+                {payLoading ? 'Загрузка...' : '50 ₽'}
+              </motion.button>
+            )}
+          </div>
+          
+          {/* Кнопка проверки оплаты */}
+          {(status?.type === 'trial' || status?.type === 'expired') && (
+            <div className="space-y-2">
+              <motion.button
+                onClick={handleCheckPayment}
+                disabled={checkLoading}
+                whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/70 text-sm font-medium hover:bg-white/10 hover:text-white disabled:opacity-50 transition-all"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                {checkLoading ? 'Проверяем...' : 'Проверить оплату'}
+              </motion.button>
+              
+              {checkMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`text-xs text-center py-2 px-3 rounded-lg ${
+                    checkMessage.includes('успешно') || checkMessage.includes('активна')
+                      ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                      : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+                  }`}
+                >
+                  {checkMessage}
+                </motion.div>
               )}
             </div>
-          </div>
-          {(status?.type === 'trial' || status?.type === 'expired') && (
-            <motion.button
-              onClick={handlePayment}
-              disabled={payLoading}
-              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500/15 border border-orange-500/25 text-orange-400 text-sm font-semibold hover:bg-orange-500/25 disabled:opacity-50 transition-all shrink-0"
-            >
-              <CreditCard className="w-4 h-4" />
-              {payLoading ? 'Загрузка...' : '50 ₽'}
-            </motion.button>
           )}
         </div>
       )}
