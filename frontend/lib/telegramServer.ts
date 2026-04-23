@@ -11,26 +11,18 @@ export function verifyInitData(initData: string, botToken: string): boolean {
   }
 
   try {
-    // Parse initData manually to preserve URL encoding
-    // and handle duplicate keys (take only first occurrence)
-    const pairs = initData.split('&')
-    const seenKeys = new Set<string>()
+    // Parse initData using URLSearchParams to decode values
+    const params = new URLSearchParams(initData)
     const dataCheckPairs: string[] = []
     let hash = ''
     
-    for (const pair of pairs) {
-      const eqIndex = pair.indexOf('=')
-      if (eqIndex === -1) continue
-      
-      const key = pair.substring(0, eqIndex)
-      
+    // Collect all parameters except hash and signature
+    for (const [key, value] of params.entries()) {
       if (key === 'hash') {
-        const value = pair.substring(eqIndex + 1)
         hash = value
-      } else if (key !== 'signature' && !seenKeys.has(key)) {
-        // Keep original URL-encoded values, skip duplicates
-        seenKeys.add(key)
-        dataCheckPairs.push(pair)
+      } else if (key !== 'signature') {
+        // Use decoded values in format key=value
+        dataCheckPairs.push(`${key}=${value}`)
       }
     }
     
@@ -42,7 +34,7 @@ export function verifyInitData(initData: string, botToken: string): boolean {
     // Sort alphabetically and join with newline
     const dataCheckString = dataCheckPairs.sort().join('\n')
 
-    console.log('[verifyInitData] Parameters:', Array.from(seenKeys).join(', '))
+    console.log('[verifyInitData] Parameters:', dataCheckPairs.map(p => p.split('=')[0]).join(', '))
     console.log('[verifyInitData] dataCheckString FULL:', dataCheckString)
     console.log('[verifyInitData] dataCheckString length:', dataCheckString.length)
 
