@@ -11,32 +11,36 @@ export function verifyInitData(initData: string, botToken: string): boolean {
   }
 
   try {
-    // Parse initData properly
-    const params = new URLSearchParams(initData)
-    const hash = params.get('hash')
+    // Parse initData manually to preserve URL encoding
+    const pairs = initData.split('&')
+    const dataCheckPairs: string[] = []
+    let hash = ''
+    
+    for (const pair of pairs) {
+      const eqIndex = pair.indexOf('=')
+      if (eqIndex === -1) continue
+      
+      const key = pair.substring(0, eqIndex)
+      const value = pair.substring(eqIndex + 1)
+      
+      if (key === 'hash') {
+        hash = value
+      } else if (key !== 'signature') {
+        // Keep original URL-encoded values
+        dataCheckPairs.push(pair)
+      }
+    }
     
     if (!hash) {
       console.error('[verifyInitData] No hash in initData')
       return false
-    }
-
-    // Build data check string according to Telegram spec
-    // https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
-    const dataCheckPairs: string[] = []
-    
-    for (const [key, value] of params.entries()) {
-      // Skip hash and signature
-      if (key === 'hash' || key === 'signature') {
-        continue
-      }
-      dataCheckPairs.push(`${key}=${value}`)
     }
     
     // Sort alphabetically and join with newline
     const dataCheckString = dataCheckPairs.sort().join('\n')
 
     console.log('[verifyInitData] Parameters:', dataCheckPairs.map(p => p.split('=')[0]).join(', '))
-    console.log('[verifyInitData] dataCheckString:', dataCheckString)
+    console.log('[verifyInitData] dataCheckString preview:', dataCheckString.substring(0, 150))
 
     // secret_key = HMAC-SHA256(bot_token, "WebAppData")
     const secretKey = createHmac('sha256', 'WebAppData').update(botToken).digest()
