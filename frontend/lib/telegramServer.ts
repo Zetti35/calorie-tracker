@@ -12,7 +12,9 @@ export function verifyInitData(initData: string, botToken: string): boolean {
 
   try {
     // Parse initData manually to preserve URL encoding
+    // and handle duplicate keys (take only first occurrence)
     const pairs = initData.split('&')
+    const seenKeys = new Set<string>()
     const dataCheckPairs: string[] = []
     let hash = ''
     
@@ -21,12 +23,13 @@ export function verifyInitData(initData: string, botToken: string): boolean {
       if (eqIndex === -1) continue
       
       const key = pair.substring(0, eqIndex)
-      const value = pair.substring(eqIndex + 1)
       
       if (key === 'hash') {
+        const value = pair.substring(eqIndex + 1)
         hash = value
-      } else if (key !== 'signature') {
-        // Keep original URL-encoded values
+      } else if (key !== 'signature' && !seenKeys.has(key)) {
+        // Keep original URL-encoded values, skip duplicates
+        seenKeys.add(key)
         dataCheckPairs.push(pair)
       }
     }
@@ -39,7 +42,7 @@ export function verifyInitData(initData: string, botToken: string): boolean {
     // Sort alphabetically and join with newline
     const dataCheckString = dataCheckPairs.sort().join('\n')
 
-    console.log('[verifyInitData] Parameters:', dataCheckPairs.map(p => p.split('=')[0]).join(', '))
+    console.log('[verifyInitData] Parameters:', Array.from(seenKeys).join(', '))
     console.log('[verifyInitData] dataCheckString preview:', dataCheckString.substring(0, 150))
 
     // secret_key = HMAC-SHA256(bot_token, "WebAppData")
