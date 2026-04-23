@@ -69,6 +69,32 @@ export default function DebugSyncPage() {
     console.log('[DEBUG] initData length:', telegram?.WebApp?.initData?.length || 0)
   }
 
+  const testInitDataVerification = async () => {
+    const telegram = (window as any).Telegram
+    const initData = telegram?.WebApp?.initData
+    
+    if (!initData) {
+      console.error('[DEBUG] No initData available')
+      return
+    }
+
+    console.log('[DEBUG] Testing initData verification...')
+    
+    try {
+      const response = await fetch('/api/debug-init-data', {
+        method: 'POST',
+        headers: {
+          'x-telegram-init-data': initData,
+        },
+      })
+
+      const result = await response.json()
+      console.log('[DEBUG] Verification result:', result)
+    } catch (error) {
+      console.error('[DEBUG] Verification test failed:', error)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white p-4">
       <h1 className="text-2xl font-bold mb-4">🐛 Sync Debug Console</h1>
@@ -95,6 +121,12 @@ export default function DebugSyncPage() {
           className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm"
         >
           Check Telegram
+        </button>
+        <button
+          onClick={testInitDataVerification}
+          className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm"
+        >
+          Test Verification
         </button>
         <button
           onClick={testAddEntry}
@@ -149,6 +181,7 @@ export default function DebugSyncPage() {
         <h3 className="font-bold mb-2">Instructions:</h3>
         <ol className="list-decimal list-inside space-y-1">
           <li>Click "Check Telegram" - should show initData available</li>
+          <li>Click "Test Verification" - tests initData HMAC verification</li>
           <li>Click "Add Test Entry" - should trigger sync after 2 seconds</li>
           <li>Watch logs for sync messages</li>
           <li>Check Supabase Dashboard → diary_data table</li>

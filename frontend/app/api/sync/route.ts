@@ -5,6 +5,15 @@ import { verifyInitData } from '@/lib/telegramServer'
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!
 
+// TODO: Fix initData verification
+// Currently verification is disabled for testing
+// Issue: HMAC hash doesn't match - need to investigate why
+// Possible causes:
+// 1. initData format changed
+// 2. Bot token mismatch
+// 3. Encoding issues
+// See logs in Vercel for details
+
 /**
  * POST /api/sync - Save user state to Supabase
  * 
